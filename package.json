@@ -1,28 +1,29 @@
 {
-  "name": "chord-research",
-  "private": true,
+  "name": "@nmaass/research-ui",
   "version": "0.1.0",
+  "description": "Shared UI primitives and theme for the Number Research family of applications.",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "dev:worker": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy",
-    "db:migrate:local": "wrangler d1 migrations apply chord-research --local",
-    "db:migrate": "wrangler d1 migrations apply chord-research --remote"
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./theme.css": "./theme.css"
   },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "theme.css",
+    "README.md"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "peerDependencies": {
+    "react": ">=18 <20"
   },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260714.1",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.3",
-    "wrangler": "^4.112.0"
-  }
+  "license": "MIT"
 }

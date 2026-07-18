@@ -8,8 +8,8 @@ export function InfoPage() {
         </p>
         <p>
           The process is simple: pick four basic piano chords — twelve majors
-          and twelve minors are available — and press play. Your progression is
-          performed at 100 beats per minute, one chord per bar.
+          and twelve minors are available — and press research. Your
+          progression is performed at 100 beats per minute, one chord per bar.
         </p>
         <p>
           If the progression has never been played before, it is added to the

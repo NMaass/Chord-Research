@@ -20,7 +20,7 @@ export function Header() {
         </nav>
       </div>
       <div className="header-auth">
-        {user ? (
+        {user && (
           <>
             <Link to={`/profile/${user.username}`}>@{user.username}</Link>
             <button
@@ -31,8 +31,6 @@ export function Header() {
               logout
             </button>
           </>
-        ) : (
-          <Link to="/login">login</Link>
         )}
       </div>
     </header>

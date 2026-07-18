@@ -522,6 +522,19 @@ button {
   text-align: center;
 }
 
+/* Inline claim form (shown after discovering a new progression) */
+.claim-form {
+  margin: 20px auto 0;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.claim-form .auth-switch {
+  margin-top: 12px;
+}
+
 .auth-switch a {
   text-decoration: underline;
 }

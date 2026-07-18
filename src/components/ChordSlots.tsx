@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { MAJOR_CHORDS, MINOR_CHORDS } from "../audio/chords";
+import { previewChord } from "../audio/player";
 
 interface ChordSlotsProps {
   slots: (string | null)[];
@@ -35,6 +36,7 @@ export function ChordSlots({
 
   const pick = (chord: string) => {
     if (openSlot === null) return;
+    previewChord(chord);
     const next = [...slots];
     next[openSlot] = chord;
     onChange(next);

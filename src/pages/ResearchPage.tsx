@@ -1,19 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { api, chordLabel, formatDate, formatTime } from "../api/client";
-import { playProgression, stopPlayback, BPM } from "../audio/player";
+import { playProgression, stopPlayback } from "../audio/player";
 import { useAuth } from "../auth/AuthContext";
 import { ChordSlots } from "../components/ChordSlots";
 import type { ResearchResult } from "../types";
 
 export function ResearchPage() {
-  const { user } = useAuth();
+  const { user, register } = useAuth();
   const [slots, setSlots] = useState<(string | null)[]>([null, null, null, null]);
   const [playing, setPlaying] = useState(false);
   const [activeSlot, setActiveSlot] = useState(-1);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [personalCount, setPersonalCount] = useState<number | null>(null);
+  const [claimUser, setClaimUser] = useState("");
+  const [claimPass, setClaimPass] = useState("");
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const allFilled = slots.every((c) => c !== null);
@@ -65,11 +69,41 @@ export function ResearchPage() {
       .catch(() => setError("failed to connect. please try again."));
   };
 
+  const handleSlotsChange = (next: (string | null)[]) => {
+    setSlots(next);
+    setResult(null);
+    setError(null);
+    setClaimError(null);
+  };
+
+  // Register and immediately claim the just-discovered progression,
+  // without leaving the page or losing the slots.
+  const handleClaim = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!result || claiming) return;
+    setClaiming(true);
+    setClaimError(null);
+    const err = await register(claimUser.trim(), claimPass);
+    if (err) {
+      setClaiming(false);
+      setClaimError(err);
+      return;
+    }
+    const { ok, data } = await api.research(result.chords);
+    setClaiming(false);
+    if (ok) {
+      setResult(data);
+      refreshPersonalCount();
+    } else {
+      setClaimError("account created, but failed to claim the progression");
+    }
+  };
+
   return (
     <main className="home">
       <ChordSlots
         slots={slots}
-        onChange={setSlots}
+        onChange={handleSlotsChange}
         activeIndex={activeSlot}
         disabled={false}
       />
@@ -79,13 +113,9 @@ export function ResearchPage() {
         onClick={handlePlay}
         disabled={!allFilled && !playing}
       >
-        {playing ? "■ stop" : `▶ play at ${BPM} bpm`}
+        {playing ? "■ stop" : "research"}
       </button>
-      <p className="input-hint">
-        {allFilled
-          ? "press play — if it's never been played, it's yours"
-          : "pick four chords"}
-      </p>
+      {!allFilled && <p className="input-hint">pick four chords</p>}
 
       <div ref={resultRef} aria-live="polite">
         {error && <div className="result result-error">{error}</div>}
@@ -102,10 +132,36 @@ export function ResearchPage() {
           <div className="result result-new">
             <span className="result-chords">{chordLabel(result.chords)}</span>{" "}
             has never been played
-            <div className="result-meta">
-              <Link to="/login">log in</Link> or{" "}
-              <Link to="/register">register</Link> to claim it
-            </div>
+            <form className="claim-form" onSubmit={handleClaim}>
+              <input
+                className="auth-input"
+                placeholder="username"
+                value={claimUser}
+                onChange={(e) => setClaimUser(e.target.value)}
+                autoComplete="username"
+                maxLength={20}
+              />
+              <input
+                className="auth-input"
+                type="password"
+                placeholder="password (6+ chars)"
+                value={claimPass}
+                onChange={(e) => setClaimPass(e.target.value)}
+                autoComplete="new-password"
+                maxLength={128}
+              />
+              <button
+                className="auth-submit"
+                type="submit"
+                disabled={claiming || !claimUser.trim() || !claimPass}
+              >
+                {claiming ? "..." : "claim it →"}
+              </button>
+              {claimError && <div className="auth-error">{claimError}</div>}
+              <div className="auth-switch">
+                already a researcher? <Link to="/login">login</Link>
+              </div>
+            </form>
           </div>
         )}
 

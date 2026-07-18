@@ -45,9 +45,14 @@ function scheduleNote(
     osc.type = type;
     osc.frequency.value = f;
 
+    // attack -> short decay -> sustain for the full duration -> quick release,
+    // so the chord rings right up to the next one (no rest between chords)
+    const sustain = peak * 0.65;
     const gain = audio.createGain();
     gain.gain.setValueAtTime(0, start);
     gain.gain.linearRampToValueAtTime(peak, start + 0.012);
+    gain.gain.exponentialRampToValueAtTime(sustain, start + 0.25);
+    gain.gain.setValueAtTime(sustain, Math.max(start + 0.25, start + duration - 0.12));
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
 
     osc.connect(gain).connect(out);
@@ -78,7 +83,7 @@ export function playProgression(
   bus.connect(filter).connect(master!);
 
   const t0 = audio.currentTime + 0.06;
-  const chordDuration = BAR_SECONDS * 0.98;
+  const chordDuration = BAR_SECONDS * 1.02; // slight legato overlap
   const timers: number[] = [];
 
   chords.forEach((chord, i) => {
@@ -136,4 +141,25 @@ export function playProgression(
 export function stopPlayback(): void {
   current?.stop();
   current = null;
+}
+
+/** Play a single chord once (picker preview). Independent of any running progression. */
+export function previewChord(chord: string): void {
+  const audio = getContext();
+  if (audio.state === "suspended") void audio.resume();
+
+  const bus = audio.createGain();
+  const filter = audio.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 2400;
+  filter.Q.value = 0.4;
+  bus.connect(filter).connect(master!);
+
+  const start = audio.currentTime + 0.02;
+  const duration = 1.6;
+  chordFrequencies(chord).forEach((freq, j) => {
+    const velocity = j === 0 ? 0.16 : 0.11;
+    scheduleNote(audio, bus, freq, start, duration, velocity);
+  });
+  window.setTimeout(() => bus.disconnect(), (duration + 0.3) * 1000);
 }

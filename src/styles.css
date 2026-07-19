@@ -172,7 +172,7 @@ button {
 /* Chord picker */
 .picker-region {
   width: 100%;
-  height: 154px;
+  height: 176px;
   margin-top: 24px;
   display: grid;
 }
@@ -185,7 +185,7 @@ button {
 .picker,
 .picker-placeholder {
   width: 100%;
-  height: 154px;
+  height: 176px;
 }
 
 .picker {
@@ -627,7 +627,7 @@ button {
   .picker-region,
   .picker,
   .picker-placeholder {
-    height: 154px;
+    height: 176px;
   }
 }
 

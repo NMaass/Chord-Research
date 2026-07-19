@@ -1,37 +1,46 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, chordLabel, formatDate } from "../api/client";
-import type { Stats } from "../types";
+import { chordLabel, formatDate } from "../api/client";
+import { useStats } from "../hooks/useStats";
+import { formatResearchPercentage } from "../utils/researchStats";
 
 export function StatsPage() {
-  const [stats, setStats] = useState<Stats | null>(null);
-
-  useEffect(() => {
-    api.stats().then(({ ok, data }) => {
-      if (ok) setStats(data);
-    });
-  }, []);
+  const { stats, loading, error, retry } = useStats();
 
   if (!stats) {
     return (
       <main className="info">
-        <p className="loading">loading...</p>
+        {loading ? (
+          <p className="loading">loading...</p>
+        ) : (
+          <div className="error-state" role="alert">
+            <p>could not load stats: {error ?? "unknown server error"}</p>
+            <button className="text-button" type="button" onClick={() => void retry()}>
+              retry
+            </button>
+          </div>
+        )}
       </main>
     );
   }
 
-  const pct =
-    stats.possible_progressions > 0
-      ? ((stats.total_progressions / stats.possible_progressions) * 100).toFixed(2)
-      : "0";
+  const percentage = formatResearchPercentage(
+    stats.total_progressions,
+    stats.possible_progressions
+  );
 
   return (
     <main className="info">
+      {error && (
+        <div className="inline-warning" role="status">
+          showing the last loaded stats; refresh failed: {error}
+        </div>
+      )}
+
       <section className="stats-section">
         <div className="stats-label">progressions researched</div>
         <div className="stats-value">{stats.total_progressions}</div>
         <div className="stats-sub">
-          of {stats.possible_progressions.toLocaleString()} possible ({pct}%)
+          of {stats.possible_progressions.toLocaleString()} possible ({percentage})
         </div>
       </section>
 
@@ -53,14 +62,16 @@ export function StatsPage() {
           </div>
         ) : (
           <ul className="top-list">
-            {stats.recent.map((r) => (
-              <li key={r.id}>
-                <span className="top-chords">{chordLabel(r.chords)}</span>
+            {stats.recent.map((research) => (
+              <li key={research.id}>
+                <span className="top-chords">
+                  {chordLabel(research.chords)}
+                </span>
                 <span className="top-count">
-                  <Link to={`/profile/${r.discovered_by}`}>
-                    @{r.discovered_by}
+                  <Link to={`/profile/${research.discovered_by}`}>
+                    @{research.discovered_by}
                   </Link>{" "}
-                  &middot; {formatDate(r.discovered_at)}
+                  &middot; {formatDate(research.discovered_at)}
                 </span>
               </li>
             ))}
@@ -74,14 +85,16 @@ export function StatsPage() {
           <div className="empty-state">no researchers yet</div>
         ) : (
           <ul className="top-list">
-            {stats.top_researchers.map((t) => (
-              <li key={t.username}>
+            {stats.top_researchers.map((researcher) => (
+              <li key={researcher.username}>
                 <span className="top-chords">
-                  <Link to={`/profile/${t.username}`}>@{t.username}</Link>
+                  <Link to={`/profile/${researcher.username}`}>
+                    @{researcher.username}
+                  </Link>
                 </span>
                 <span className="top-count">
-                  {t.count}{" "}
-                  {t.count === 1 ? "progression" : "progressions"}
+                  {researcher.count}{" "}
+                  {researcher.count === 1 ? "progression" : "progressions"}
                 </span>
               </li>
             ))}

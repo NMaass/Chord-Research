@@ -8,4 +8,21 @@
     "build": "tsc --noEmit && vite build",
     "dev:worker": "npm run build && wrangler dev",
     "deploy": "npm run db:migrate && npm run build && wrangler deploy",
-    "db:migrate:local": "wrangler d
+    "db:migrate:local": "wrangler d1 migrations apply chord-research --local",
+    "db:migrate": "wrangler d1 migrations apply chord-research --remote"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260714.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "wrangler": "^4.112.0"
+  }
+}

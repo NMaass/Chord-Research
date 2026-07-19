@@ -40,69 +40,82 @@ export function ChordSlots({
     const next = [...slots];
     next[openSlot] = chord;
     onChange(next);
-    // advance to the next empty slot for fast entry
-    const nextEmpty = next.findIndex((c, i) => i > openSlot && c === null);
+
+    // Advance to the next empty slot for fast entry.
+    const nextEmpty = next.findIndex((candidate, index) => {
+      return index > openSlot && candidate === null;
+    });
     setOpenSlot(nextEmpty === -1 ? null : nextEmpty);
   };
 
   return (
-    <div ref={pickerRef}>
+    <div className="chord-input" ref={pickerRef}>
       <div className="slots" role="group" aria-label="chord slots">
-        {slots.map((chord, i) => (
+        {slots.map((chord, index) => (
           <button
-            key={i}
+            key={index}
             type="button"
             className={[
               "slot",
               chord ? "" : "slot-empty",
-              openSlot === i ? "slot-open" : "",
-              activeIndex === i ? "slot-active" : "",
+              openSlot === index ? "slot-open" : "",
+              activeIndex === index ? "slot-active" : "",
             ]
               .filter(Boolean)
               .join(" ")}
             disabled={disabled}
-            aria-label={`slot ${i + 1}${chord ? `: ${chord}` : ": empty"}`}
-            onClick={() => setOpenSlot(openSlot === i ? null : i)}
+            aria-expanded={openSlot === index}
+            aria-controls="chord-picker-region"
+            aria-label={`slot ${index + 1}${chord ? `: ${chord}` : ": empty"}`}
+            onClick={() => setOpenSlot(openSlot === index ? null : index)}
           >
             {chord ?? "· · ·"}
           </button>
         ))}
       </div>
 
-      {openSlot !== null && (
-        <div className="picker" role="listbox" aria-label="pick a chord">
-          <div className="picker-label">major</div>
-          <div className="picker-row">
-            {MAJOR_CHORDS.map((chord) => (
-              <button
-                key={chord}
-                type="button"
-                className={`picker-chord${
-                  slots[openSlot] === chord ? " selected" : ""
-                }`}
-                onClick={() => pick(chord)}
-              >
-                {chord}
-              </button>
-            ))}
+      <div className="picker-region" id="chord-picker-region">
+        {openSlot === null ? (
+          <div className="picker-placeholder">
+            select a chord slot to open the picker
           </div>
-          <div className="picker-label">minor</div>
-          <div className="picker-row">
-            {MINOR_CHORDS.map((chord) => (
-              <button
-                key={chord}
-                type="button"
-                className={`picker-chord${
-                  slots[openSlot] === chord ? " selected" : ""
-                }`}
-                onClick={() => pick(chord)}
-              >
-                {chord}
-              </button>
-            ))}
+        ) : (
+          <div className="picker" aria-label={`pick chord for slot ${openSlot + 1}`}>
+            <div className="picker-label">major</div>
+            <div className="picker-row">
+              {MAJOR_CHORDS.map((chord) => (
+                <button
+                  key={chord}
+                  type="button"
+                  className={`picker-chord${
+                    slots[openSlot] === chord ? " selected" : ""
+                  }`}
+                  aria-pressed={slots[openSlot] === chord}
+                  onClick={() => pick(chord)}
+                >
+                  {chord}
+                </button>
+              ))}
+            </div>
+            <div className="picker-label">minor</div>
+            <div className="picker-row">
+              {MINOR_CHORDS.map((chord) => (
+                <button
+                  key={chord}
+                  type="button"
+                  className={`picker-chord${
+                    slots[openSlot] === chord ? " selected" : ""
+                  }`}
+                  aria-pressed={slots[openSlot] === chord}
+                  onClick={() => pick(chord)}
+                >
+                  {chord}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

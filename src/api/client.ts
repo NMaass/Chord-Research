@@ -9,8 +9,23 @@ async function request<T>(
     headers: { "Content-Type": "application/json" },
     ...options,
   });
-  const data = (await res.json()) as T;
-  return { ok: res.ok, status: res.status, data };
+
+  const body = await res.text();
+  let data: unknown = {};
+
+  if (body) {
+    try {
+      data = JSON.parse(body);
+    } catch {
+      data = {
+        error: res.ok
+          ? "server returned an invalid response"
+          : `server request failed (${res.status})`,
+      };
+    }
+  }
+
+  return { ok: res.ok, status: res.status, data: data as T };
 }
 
 export const api = {

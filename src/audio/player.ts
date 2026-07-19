@@ -1,11 +1,12 @@
 // 100 BPM chord player using the Web Audio API.
-// One chord per bar (4 beats = 2.4s at 100 BPM), soft electric-piano-ish voice.
+// Chords change every two beats (1.2s at 100 BPM), with a soft electric-piano-ish voice.
 
 import { chordFrequencies } from "./chords";
 
 export const BPM = 100;
 export const BEAT_SECONDS = 60 / BPM;
 export const BAR_SECONDS = BEAT_SECONDS * 4;
+export const CHORD_SECONDS = BAR_SECONDS / 2;
 
 interface ActivePlayback {
   stop: () => void;
@@ -45,14 +46,14 @@ function scheduleNote(
     osc.type = type;
     osc.frequency.value = f;
 
-    // attack -> short decay -> sustain for the full duration -> quick release,
-    // so the chord rings right up to the next one (no rest between chords)
     const sustain = peak * 0.65;
+    const decayEnd = start + Math.min(0.25, duration * 0.35);
+    const releaseStart = Math.max(decayEnd, start + duration - 0.12);
     const gain = audio.createGain();
     gain.gain.setValueAtTime(0, start);
     gain.gain.linearRampToValueAtTime(peak, start + 0.012);
-    gain.gain.exponentialRampToValueAtTime(sustain, start + 0.25);
-    gain.gain.setValueAtTime(sustain, Math.max(start + 0.25, start + duration - 0.12));
+    gain.gain.exponentialRampToValueAtTime(sustain, decayEnd);
+    gain.gain.setValueAtTime(sustain, releaseStart);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
 
     osc.connect(gain).connect(out);
@@ -62,7 +63,7 @@ function scheduleNote(
 }
 
 /**
- * Play a 4-chord progression at 100 BPM.
+ * Play a 4-chord progression at 100 BPM, changing chords every two beats.
  * `onChordStart(index)` fires (approximately) as each chord sounds; -1 at the end.
  * Returns a handle with a stop() and a completion promise.
  */
@@ -83,11 +84,11 @@ export function playProgression(
   bus.connect(filter).connect(master!);
 
   const t0 = audio.currentTime + 0.06;
-  const chordDuration = BAR_SECONDS * 1.02; // slight legato overlap
+  const chordDuration = CHORD_SECONDS * 1.02;
   const timers: number[] = [];
 
   chords.forEach((chord, i) => {
-    const start = t0 + i * BAR_SECONDS;
+    const start = t0 + i * CHORD_SECONDS;
     const freqs = chordFrequencies(chord);
     freqs.forEach((freq, j) => {
       // bass note a touch louder
@@ -102,7 +103,8 @@ export function playProgression(
     );
   });
 
-  const totalMs = (t0 + chords.length * BAR_SECONDS - audio.currentTime) * 1000;
+  const totalMs =
+    (t0 + chords.length * CHORD_SECONDS - audio.currentTime) * 1000;
 
   let stopFn: () => void = () => {};
   const done = new Promise<void>((resolve) => {
@@ -156,7 +158,7 @@ export function previewChord(chord: string): void {
   bus.connect(filter).connect(master!);
 
   const start = audio.currentTime + 0.02;
-  const duration = 1.6;
+  const duration = 0.8;
   chordFrequencies(chord).forEach((freq, j) => {
     const velocity = j === 0 ? 0.16 : 0.11;
     scheduleNote(audio, bus, freq, start, duration, velocity);

@@ -13,6 +13,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<ResearchPage />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="/about" element={<InfoPage />} />
         <Route path="/info" element={<InfoPage />} />
         <Route path="/profile/:username" element={<ProfilePage />} />
         <Route path="/login" element={<AuthPage />} />

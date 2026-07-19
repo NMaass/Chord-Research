@@ -75,10 +75,7 @@ button {
   color: var(--color-muted);
 }
 
-.header-nav a:hover {
-  color: var(--color-text);
-}
-
+.header-nav a:hover,
 .header-nav a.active {
   color: var(--color-text);
 }
@@ -116,6 +113,10 @@ button {
 }
 
 /* Chord slots */
+.chord-input {
+  width: 100%;
+}
+
 .slots {
   display: flex;
   gap: 12px;
@@ -149,13 +150,13 @@ button {
   font-size: 1rem;
 }
 
-.slot-open {
-  border-color: var(--color-text);
-}
-
+.slot-open,
 .slot-active {
   border-color: var(--color-text);
   color: var(--color-text);
+}
+
+.slot-active {
   animation: slotPulse 0.6s ease-in-out infinite alternate;
 }
 
@@ -169,15 +170,41 @@ button {
 }
 
 /* Chord picker */
-.picker {
+.picker-region {
+  width: 100%;
+  height: 176px;
   margin-top: 24px;
+  display: grid;
+}
+
+.picker-region > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.picker,
+.picker-placeholder {
+  width: 100%;
+  height: 176px;
+}
+
+.picker {
   border: 1px solid var(--color-border);
   background: #ffffff;
   padding: 16px;
   text-align: left;
   animation: fadeIn 0.15s ease-in;
-  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.picker-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  color: var(--color-muted);
+  font-size: 0.75rem;
 }
 
 .picker-row {
@@ -202,8 +229,10 @@ button {
   flex-shrink: 0;
 }
 
-.picker-chord:hover {
+.picker-chord:hover,
+.picker-chord:focus-visible {
   border-color: var(--color-text);
+  outline: none;
 }
 
 .picker-chord.selected {
@@ -328,6 +357,10 @@ button {
   margin-bottom: 40px;
 }
 
+.about-progress {
+  min-height: 112px;
+}
+
 .stats-label {
   font-size: 0.75rem;
   color: var(--color-muted);
@@ -339,12 +372,45 @@ button {
 .stats-value {
   font-size: 2rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .stats-sub {
   font-size: 0.75rem;
   color: var(--color-muted);
   margin-top: 4px;
+}
+
+.stats-placeholder {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.error-state {
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.error-state.compact {
+  font-size: 0.75rem;
+}
+
+.text-button {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+}
+
+.inline-warning {
+  margin-bottom: 24px;
+  color: var(--color-error);
+  font-size: 0.75rem;
 }
 
 /* Lists (recent discoveries, top researchers) */
@@ -432,10 +498,7 @@ button {
   line-height: 1;
 }
 
-.icon-button:hover {
-  color: var(--color-text);
-}
-
+.icon-button:hover,
 .icon-button.active {
   color: var(--color-text);
 }
@@ -552,8 +615,27 @@ button {
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+
   .slot {
     width: 60px;
     font-size: 1rem;
+  }
+
+  .picker-region,
+  .picker,
+  .picker-placeholder {
+    height: 176px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot-active,
+  .picker,
+  .result,
+  .auth-error {
+    animation: none;
   }
 }

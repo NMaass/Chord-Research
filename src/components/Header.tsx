@@ -16,7 +16,7 @@ export function Header() {
             research
           </NavLink>
           <NavLink to="/stats">stats</NavLink>
-          <NavLink to="/info">info</NavLink>
+          <NavLink to="/about">about</NavLink>
         </nav>
       </div>
       <div className="header-auth">
